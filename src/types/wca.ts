@@ -35,10 +35,13 @@ export interface Person {
 
 export interface Assignment {
   activityId: number;
-  assignmentCode: 'competitor' | 'staff-judge' | 'staff-scrambler' | 'staff-runner';
+  assignmentCode:
+    | "competitor"
+    | "staff-judge"
+    | "staff-scrambler"
+    | "staff-runner";
   stationNumber?: number;
 }
-
 
 export interface Event {
   id: string;
@@ -72,6 +75,7 @@ export interface Room {
   activities: Activity[];
 }
 
+// Event
 export interface Activity {
   id: number;
   name: string;
@@ -82,6 +86,7 @@ export interface Activity {
   scrambleSetId: number | null;
 }
 
+// Rounds
 export interface ChildActivity {
   id: number;
   name: string;

@@ -10,6 +10,8 @@ import { subtitle, title } from "@/components/primitives";
 import { SearchIcon } from "@/components/icons";
 import DefaultLayout from "@/layouts/default";
 import { WcaCompetition } from "@/types/wca";
+import { useDocumentMetadata } from "@/utils/metadata.ts";
+import { formatCompetitionDateRange } from "@/utils/date.ts";
 
 function useDebounce<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
@@ -28,6 +30,11 @@ function useDebounce<T>(value: T, delay: number): T {
 }
 
 export default function IndexPage() {
+  useDocumentMetadata(
+    "Cubing Groups & Live",
+    "WCA Competition Groups and Live Results combined.",
+  );
+
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearchTerm = useDebounce(searchTerm, 500); // 500ms debounce delay
 
@@ -104,7 +111,10 @@ export default function IndexPage() {
                       <CardBody>
                         <p>{`${comp.city}, ${comp.country_iso2}`}</p>
                         <p className="text-default-500 text-sm">
-                          {comp.start_date} to {comp.end_date}
+                          {formatCompetitionDateRange(
+                            comp.start_date,
+                            comp.end_date,
+                          )}
                         </p>
                       </CardBody>
                     </Card>
