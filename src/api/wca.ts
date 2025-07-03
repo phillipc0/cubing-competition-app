@@ -26,3 +26,17 @@ export const getWcif = async (competitionId: string): Promise<Wcif> => {
 
   return response.data;
 };
+
+export const searchCompetitions = async (
+  query: string,
+): Promise<WcaCompetition[]> => {
+  if (!query) {
+    return [];
+  }
+  const response = await axios.get(`${WCA_API_BASE_URL}/search/competitions`, {
+    params: { q: query },
+  });
+
+  // Die API gibt das Ergebnis in einem 'result'-Array zurück
+  return response.data.result;
+};

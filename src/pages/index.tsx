@@ -1,34 +1,65 @@
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Input } from "@heroui/input";
 import { Card, CardBody, CardHeader } from "@heroui/card";
-import { Spinner } from "@heroui/spinner"; // Importiere Spinner, falls nicht vorhanden
+import { Spinner } from "@heroui/spinner";
 
-import { getCompetitions } from "@/api/wca";
+import { getCompetitions, searchCompetitions } from "@/api/wca"; // Updated imports
 import { subtitle, title } from "@/components/primitives";
 import { SearchIcon } from "@/components/icons";
 import DefaultLayout from "@/layouts/default";
+import { WcaCompetition } from "@/types/wca";
+
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
 
 export default function IndexPage() {
   const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearchTerm = useDebounce(searchTerm, 500); // 500ms debounce delay
 
   const {
-    data: competitions,
-    isLoading,
-    isError,
-  } = useQuery({
-    queryKey: ["competitions"],
+    data: defaultCompetitions,
+    isLoading: isLoadingDefault,
+    isError: isErrorDefault,
+  } = useQuery<WcaCompetition[]>({
+    queryKey: ["competitions", "default"],
     queryFn: getCompetitions,
+    // Only enable this query if the debounced search term is empty
+    enabled: !debouncedSearchTerm,
   });
 
-  const filteredCompetitions = useMemo(() => {
-    if (!competitions) return [];
+  const {
+    data: searchedCompetitions,
+    isLoading: isLoadingSearch,
+    isError: isErrorSearch,
+  } = useQuery<WcaCompetition[]>({
+    queryKey: ["competitions", debouncedSearchTerm],
+    queryFn: () => searchCompetitions(debouncedSearchTerm),
+    // Only enable this query if the debounced search term is NOT empty
+    enabled: !!debouncedSearchTerm,
+  });
 
-    return competitions.filter((comp) =>
-      comp.name.toLowerCase().includes(searchTerm.toLowerCase()),
-    );
-  }, [competitions, searchTerm]);
+  const isLoading = isLoadingDefault || isLoadingSearch;
+  const isError = isErrorDefault || isErrorSearch;
+
+  // Determine which list of competitions to display
+  const competitions = debouncedSearchTerm
+    ? searchedCompetitions
+    : defaultCompetitions;
 
   return (
     <DefaultLayout>
@@ -43,32 +74,49 @@ export default function IndexPage() {
         <Input
           isClearable
           aria-label="Search"
-          className="w-full sm:max-w-[44%] my-4"
+          className="w-full sm:max-w-[44%]"
           placeholder="Search for a competition..."
           startContent={<SearchIcon />}
           value={searchTerm}
           onValueChange={setSearchTerm}
         />
 
-        {isLoading && <Spinner label="Loading competitions..." />}
-        {isError && <p className="text-danger">Failed to load competitions.</p>}
-
-        <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredCompetitions.map((comp) => (
-            <RouterLink key={comp.id} to={`/competition/${comp.id}`}>
-              <Card isHoverable isPressable className="h-full">
-                <CardHeader>
-                  <h4 className="font-bold text-large">{comp.name}</h4>
-                </CardHeader>
-                <CardBody>
-                  <p>{`${comp.city}, ${comp.country_iso2}`}</p>
-                  <p className="text-default-500 text-sm">
-                    {comp.start_date} to {comp.end_date}
-                  </p>
-                </CardBody>
-              </Card>
-            </RouterLink>
-          ))}
+        <div className="w-full min-h-[300px]">
+          {isLoading && (
+            <div className="flex justify-center pt-8">
+              <Spinner label="Loading..." />
+            </div>
+          )}
+          {isError && (
+            <p className="text-center text-danger">
+              Failed to load competitions.
+            </p>
+          )}
+          {!isLoading && !isError && (
+            <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {competitions && competitions.length > 0 ? (
+                competitions.map((comp) => (
+                  <RouterLink key={comp.id} to={`/competition/${comp.id}`}>
+                    <Card isHoverable isPressable className="h-full">
+                      <CardHeader>
+                        <h4 className="font-bold text-large">{comp.name}</h4>
+                      </CardHeader>
+                      <CardBody>
+                        <p>{`${comp.city}, ${comp.country_iso2}`}</p>
+                        <p className="text-default-500 text-sm">
+                          {comp.start_date} to {comp.end_date}
+                        </p>
+                      </CardBody>
+                    </Card>
+                  </RouterLink>
+                ))
+              ) : (
+                <p className="col-span-full text-center text-default-500">
+                  No competitions found.
+                </p>
+              )}
+            </div>
+          )}
         </div>
       </section>
     </DefaultLayout>
