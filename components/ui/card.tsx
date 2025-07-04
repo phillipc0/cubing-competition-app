@@ -1,24 +1,31 @@
 import * as React from "react";
-import { Text, TextProps, View, ViewProps } from "react-native";
+import {
+  Pressable,
+  PressableProps,
+  Text,
+  TextProps,
+  View,
+  ViewProps,
+} from "react-native";
 import { TextClassContext } from "~/components/ui/text";
 import { cn } from "~/lib/utils";
 
-function Card({
-  className,
-  ...props
-}: ViewProps & {
-  ref?: React.RefObject<View>;
-}) {
+const Card = React.forwardRef<
+  React.ElementRef<typeof Pressable>,
+  PressableProps
+>(({ className, ...props }, ref) => {
   return (
-    <View
+    <Pressable
+      ref={ref}
       className={cn(
-        "rounded-lg border border-border bg-card shadow-sm shadow-foreground/10",
+        "rounded-lg border border-border bg-card shadow-sm shadow-foreground/10 active:opacity-80",
         className,
       )}
       {...props}
     />
   );
-}
+});
+Card.displayName = "Card";
 
 function CardHeader({
   className,

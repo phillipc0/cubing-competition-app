@@ -103,7 +103,8 @@ export default function IndexPage() {
             }
             renderItem={({ item: comp }) => (
               <Link href={`/competition/${comp.id}`} asChild>
-                <Card className="h-full">
+                {/* FIX: Removed className="h-full" from Card */}
+                <Card>
                   <CardHeader>
                     <Text className="font-bold text-lg">{comp.name}</Text>
                   </CardHeader>
