@@ -1,95 +1,127 @@
-import * as React from 'react';
-import { View } from 'react-native';
-import Animated, { FadeInUp, FadeOutDown, LayoutAnimationConfig } from 'react-native-reanimated';
-import { Info } from '~/lib/icons/Info';
-import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
-import { Button } from '~/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '~/components/ui/card';
-import { Progress } from '~/components/ui/progress';
-import { Text } from '~/components/ui/text';
-import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
+import { useEffect, useState } from "react";
+import { FlatList, View } from "react-native";
+import { Link, useFocusEffect } from "expo-router";
+import { useQuery } from "@tanstack/react-query";
+import { useNavigation } from "@react-navigation/native";
 
-const GITHUB_AVATAR_URI =
-  'https://i.pinimg.com/originals/ef/a2/8d/efa28d18a04e7fa40ed49eeb0ab660db.jpg';
+import { getCompetitions, searchCompetitions } from "lib/api/wca";
+import { subtitle, title } from "components/primitives";
+import { Text } from "components/ui/text";
+import { Card, CardBody, CardHeader } from "components/ui/card";
+import { Input } from "components/ui/input";
+import { Spinner } from "components/ui/spinner";
+import { SearchIcon } from "lib/icons/Search";
+import { WcaCompetition } from "types/wca";
+import { formatCompetitionDateRange } from "lib/utils";
 
-export default function Screen() {
-  const [progress, setProgress] = React.useState(78);
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
 
-  function updateProgressValue() {
-    setProgress(Math.floor(Math.random() * 100));
-  }
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
+
+export default function IndexPage() {
+  const navigation = useNavigation();
+
+  useFocusEffect(() => {
+    navigation.setOptions({ title: "Cubing Groups & Live" });
+  });
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+
+  const {
+    data: defaultCompetitions,
+    isLoading: isLoadingDefault,
+    isError: isErrorDefault,
+  } = useQuery<WcaCompetition[]>({
+    queryKey: ["competitions", "default"],
+    queryFn: getCompetitions,
+    enabled: !debouncedSearchTerm,
+  });
+
+  const {
+    data: searchedCompetitions,
+    isLoading: isLoadingSearch,
+    isError: isErrorSearch,
+  } = useQuery<WcaCompetition[]>({
+    queryKey: ["competitions", debouncedSearchTerm],
+    queryFn: () => searchCompetitions(debouncedSearchTerm),
+    enabled: !!debouncedSearchTerm,
+  });
+
+  const isLoading = isLoadingDefault || isLoadingSearch;
+  const isError = isErrorDefault || isErrorSearch;
+  const competitions = debouncedSearchTerm
+    ? searchedCompetitions
+    : defaultCompetitions;
+
   return (
-    <View className='flex-1 justify-center items-center gap-5 p-6 bg-secondary/30'>
-      <Card className='w-full max-w-sm p-6 rounded-2xl'>
-        <CardHeader className='items-center'>
-          <Avatar alt="Rick Sanchez's Avatar" className='w-24 h-24'>
-            <AvatarImage source={{ uri: GITHUB_AVATAR_URI }} />
-            <AvatarFallback>
-              <Text>RS</Text>
-            </AvatarFallback>
-          </Avatar>
-          <View className='p-3' />
-          <CardTitle className='pb-2 text-center'>Rick Sanchez</CardTitle>
-          <View className='flex-row'>
-            <CardDescription className='text-base font-semibold'>Scientist</CardDescription>
-            <Tooltip delayDuration={150}>
-              <TooltipTrigger className='px-2 pb-0.5 active:opacity-50'>
-                <Info size={14} strokeWidth={2.5} className='w-4 h-4 text-foreground/70' />
-              </TooltipTrigger>
-              <TooltipContent className='py-2 px-4 shadow'>
-                <Text className='native:text-lg'>Freelance</Text>
-              </TooltipContent>
-            </Tooltip>
-          </View>
-        </CardHeader>
-        <CardContent>
-          <View className='flex-row justify-around gap-3'>
-            <View className='items-center'>
-              <Text className='text-sm text-muted-foreground'>Dimension</Text>
-              <Text className='text-xl font-semibold'>C-137</Text>
-            </View>
-            <View className='items-center'>
-              <Text className='text-sm text-muted-foreground'>Age</Text>
-              <Text className='text-xl font-semibold'>70</Text>
-            </View>
-            <View className='items-center'>
-              <Text className='text-sm text-muted-foreground'>Species</Text>
-              <Text className='text-xl font-semibold'>Human</Text>
-            </View>
-          </View>
-        </CardContent>
-        <CardFooter className='flex-col gap-3 pb-0'>
-          <View className='flex-row items-center overflow-hidden'>
-            <Text className='text-sm text-muted-foreground'>Productivity:</Text>
-            <LayoutAnimationConfig skipEntering>
-              <Animated.View
-                key={progress}
-                entering={FadeInUp}
-                exiting={FadeOutDown}
-                className='w-11 items-center'
-              >
-                <Text className='text-sm font-bold text-sky-600'>{progress}%</Text>
-              </Animated.View>
-            </LayoutAnimationConfig>
-          </View>
-          <Progress value={progress} className='h-2' indicatorClassName='bg-sky-600' />
-          <View />
-          <Button
-            variant='outline'
-            className='shadow shadow-foreground/5'
-            onPress={updateProgressValue}
-          >
-            <Text>Update</Text>
-          </Button>
-        </CardFooter>
-      </Card>
+    <View className="flex-1 items-center justify-center p-6 pt-12">
+      <View className="w-full max-w-lg items-center justify-center">
+        <Text className={title()}>WCA Competitions</Text>
+        <Text className={subtitle({ class: "mt-4 text-center" })}>
+          Select a competition to see live results and group assignments.
+        </Text>
+      </View>
+
+      <Input
+        placeholder="Search for a competition..."
+        value={searchTerm}
+        onChangeText={setSearchTerm}
+        className="my-6 w-full max-w-md"
+        icon={<SearchIcon className="text-foreground" size={18} />}
+      />
+
+      <View className="w-full flex-1 min-h-[300px]">
+        {isLoading && <Spinner label="Loading..." />}
+        {isError && (
+          <Text className="text-center text-destructive">
+            Failed to load competitions.
+          </Text>
+        )}
+        {!isLoading && !isError && (
+          <FlatList
+            data={competitions}
+            keyExtractor={(item) => item.id}
+            numColumns={1}
+            contentContainerClassName="gap-4"
+            ListEmptyComponent={
+              <Text className="col-span-full text-center text-muted-foreground">
+                No competitions found.
+              </Text>
+            }
+            renderItem={({ item: comp }) => (
+              <Link href={`/competition/${comp.id}`} asChild>
+                <Card className="h-full">
+                  <CardHeader>
+                    <Text className="font-bold text-lg">{comp.name}</Text>
+                  </CardHeader>
+                  <CardBody>
+                    <Text>{`${comp.city}, ${comp.country_iso2}`}</Text>
+                    <Text className="text-muted-foreground text-sm">
+                      {formatCompetitionDateRange(
+                        comp.start_date,
+                        comp.end_date,
+                      )}
+                    </Text>
+                  </CardBody>
+                </Card>
+              </Link>
+            )}
+          />
+        )}
+      </View>
     </View>
   );
 }
