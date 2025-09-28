@@ -95,3 +95,14 @@ export interface ChildActivity {
   endTime: string;
   assignments: Assignment[];
 }
+
+export const liveRequestBody = (id: any) => {
+  return {
+    operationName: "Competitor",
+    query:
+      "query Competitor($id: ID!) {\n  person(id: $id) {\n    id\n    name\n    wcaId\n    country {\n      iso2\n      __typename\n    }\n    results {\n      id\n      ranking\n      advancing\n      advancingQuestionable\n      attempts {\n        result\n        __typename\n      }\n      best\n      average\n      singleRecordTag\n      averageRecordTag\n      round {\n        id\n        name\n        number\n        competitionEvent {\n          id\n          event {\n            id\n            name\n            rank\n            __typename\n          }\n          __typename\n        }\n        format {\n          id\n          numberOfAttempts\n          sortBy\n          __typename\n        }\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}",
+    variables: {
+      id: "794685",
+    },
+  };
+};

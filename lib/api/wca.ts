@@ -5,12 +5,12 @@ const WCA_API_BASE_URL = "https://api.worldcubeassociation.org/";
 const WCA_ORIGIN_URL = "https://www.worldcubeassociation.org/api/v0";
 
 export const getCompetitions = async (): Promise<WcaCompetition[]> => {
-  const startDate = new Date().toISOString().split("T")[0];
+  const currentDate = new Date().toISOString().split("T")[0];
 
   const response = await axios.get(`${WCA_API_BASE_URL}/competitions`, {
     params: {
-      start: startDate,
-      sort: "start_date", // sort by newest first
+      ongoing_and_future: currentDate,
+      sort: "start_date,end_date,name", // sort by newest, then name
       per_page: 20,
     },
   });

@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { Assignment } from "~/types/wca";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -63,4 +64,19 @@ export const groupActivitiesByDay = (activities: any[]) => {
     grouped[day].push(activity);
   });
   return grouped;
+};
+
+export const mapAssignment = (assignment: Assignment["assignmentCode"]) => {
+  switch (assignment) {
+    case "competitor":
+      return "Competitor";
+    case "staff-judge":
+      return "Judge";
+    case "staff-scrambler":
+      return "Scrambler";
+    case "staff-runner":
+      return "Runner";
+    default:
+      return assignment;
+  }
 };

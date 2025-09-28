@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { ScrollView, View } from "react-native";
-import { useFocusEffect, useLocalSearchParams } from "expo-router";
+import { Link, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigation } from "@react-navigation/native";
 
@@ -11,7 +11,7 @@ import { Text } from "components/ui/text";
 import { Card, CardBody, CardHeader } from "components/ui/card";
 import { Spinner } from "components/ui/spinner";
 import { Select, SelectItem } from "components/ui/select";
-import { groupActivitiesByDay } from "lib/utils";
+import { groupActivitiesByDay, mapAssignment } from "lib/utils";
 
 const findUserGroups = (wcif: any, selectedPersonId: number | null) => {
   if (!selectedPersonId || !wcif) return [];
@@ -129,6 +129,22 @@ export default function CompetitionPage() {
           </Select>
         </View>
 
+        {selectedPersonId && (
+          <Link
+            href={{
+              pathname: "/competition/[competitionId]/results/[personId]",
+              params: { competitionId, personId: selectedPersonId },
+            }}
+            asChild
+          >
+            <Card>
+              <CardBody>
+                <Text className="mt-4 text-center font-bold">View Results</Text>
+              </CardBody>
+            </Card>
+          </Link>
+        )}
+
         <View className="w-full gap-10">
           <View>
             <Text className={subtitle()}>My Groups</Text>
@@ -146,7 +162,7 @@ export default function CompetitionPage() {
                         <Text>
                           Assignment:{" "}
                           <Text className="font-bold text-primary">
-                            {assignment.assignmentCode}
+                            {mapAssignment(assignment.assignmentCode)}
                           </Text>
                         </Text>
                         <Text className="text-sm text-muted-foreground">
