@@ -1,50 +1,16 @@
-# Vite & HeroUI Template
+# Starter base
 
-This is a template for creating applications using Vite and HeroUI (v2).
+A starting point to help you set up your project quickly and use the common components provided by `react-native-reusables`. The idea is to make it easier for you to get started.
 
-[Try it on CodeSandbox](https://githubbox.com/frontio-ai/vite-template)
+## Features
 
-## Technologies Used
+- NativeWind v4
+- Dark and light mode
+  - Android Navigation Bar matches mode
+  - Persistent mode
+- Common components
+  - ThemeToggle, Avatar, Button, Card, Progress, Text, Tooltip
 
-- [Vite](https://vitejs.dev/guide/)
-- [HeroUI](https://heroui.com)
-- [Tailwind CSS](https://tailwindcss.com)
-- [Tailwind Variants](https://tailwind-variants.org)
-- [TypeScript](https://www.typescriptlang.org)
-- [Framer Motion](https://www.framer.com/motion)
-
-## How to Use
-
-To clone the project, run the following command:
-
-```bash
-git clone https://github.com/frontio-ai/vite-template.git
-```
-
-### Install dependencies
-
-You can use one of them `npm`, `yarn`, `pnpm`, `bun`, Example using `npm`:
-
-```bash
-npm install
-```
-
-### Run the development server
-
-```bash
-npm run dev
-```
-
-### Setup pnpm (optional)
-
-If you are using `pnpm`, you need to add the following code to your `.npmrc` file:
-
-```bash
-public-hoist-pattern[]=*@heroui/*
-```
-
-After modifying the `.npmrc` file, you need to run `pnpm install` again to ensure that the dependencies are installed correctly.
-
-## License
-
-Licensed under the [MIT license](https://github.com/frontio-ai/vite-template/blob/main/LICENSE).
+<img src="https://github.com/mrzachnugent/react-native-reusables/assets/63797719/42c94108-38a7-498b-9c70-18640420f1bc"
+     alt="starter-base-template"
+     style="width:270px;" />
